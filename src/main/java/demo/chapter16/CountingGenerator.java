@@ -2,8 +2,6 @@ package demo.chapter16;
 
 import net.mindview.util.Generator;
 
-import java.util.Arrays;
-
 /**
  * @ClassName CountingGenerator
  * @Description TODO
