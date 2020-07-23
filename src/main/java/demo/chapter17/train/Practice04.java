@@ -1,9 +1,7 @@
 package demo.chapter17.train;
 
-import net.mindview.util.CollectionData;
 import net.mindview.util.TextFile;
 
-import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -24,8 +22,7 @@ public class Practice04 {
          */
         String fileName = "D:\\P\\javaWorkSpace\\ThinkingJava\\src\\main\\resources\\chapter17-train-practice04.txt";
         String read = TextFile.read(fileName);
-        Collection collection = new ArrayList<>(Arrays.asList(read.split(" ")));
-        return collection;
+        return new ArrayList<>(Arrays.asList(read.split(" ")));
     }
 
     public static void main(String[] args) {
