@@ -102,6 +102,7 @@ public class Lists {
 
         basicTest(new LinkedList<>(Countries.names(25)));
         basicTest(new ArrayList<>(Countries.names(25)));
+        
         iterMotion(new LinkedList<>(Countries.names(25)));
         iterMotion(new ArrayList<>(Countries.names(25)));
 
