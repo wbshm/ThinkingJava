@@ -10,41 +10,40 @@ import java.util.*;
  * @Author wangrq
  * @Date 2020/7/24 18:46
  */
-public class SimpleHashMap<K, V> implements Map<K, V> {
+public class SimpleLinkedHashMap<K, V> implements Map<K, V> {
     static final int SIZE = 997;
     private int count = 0;
 
-    LinkedList<MapEntry<K, V>>[] buckets = new LinkedList[SIZE];
+    LinkedMapEntry<K, V>[] buckets = new LinkedMapEntry[SIZE];
 
     @Override
     public V put(K k, V v) {
         V oldValue = get(k);
         int index = Math.abs(k.hashCode() % SIZE);
         if (buckets[index] == null) {
-            buckets[index] = new LinkedList<>();
+            buckets[index] = new LinkedMapEntry<>(k, v);
+            return null;
         }
-        LinkedList<MapEntry<K, V>> bucket = buckets[index];
-        MapEntry<K, V> pair = new MapEntry<>(k, v);
-        boolean found = false;
-        ListIterator<MapEntry<K, V>> iterator = bucket.listIterator();
-        while (iterator.hasNext()) {
+        LinkedMapEntry<K, V> loop = buckets[index];
+        while (true) {
             count++;
-            MapEntry<K, V> next = iterator.next();
-            if (next.getKey().equals(k)) {
-                if (next.equals(pair)) {
+            if (loop.getKey().equals(k)) {
+                oldValue = loop.getValue();
+                if (oldValue.equals(v)) {
                     System.err.println("count:" + count);
-                    System.err.println("the same data:" + pair);
-                    return next.getValue();
+                    System.err.println("the same data:" + loop);
+                    return loop.getValue();
                 }
-                oldValue = next.getValue();
-                iterator.set(pair);
-                found = true;
+                loop.setValue(v);
+                return oldValue;
+            }
+            if (Objects.nonNull(loop.next)) {
+                loop = loop.next;
+            } else {
                 break;
             }
         }
-        if (!found) {
-            buckets[index].add(pair);
-        }
+        loop.next = new LinkedMapEntry<>(k, v);
         return oldValue;
     }
 
@@ -57,9 +56,10 @@ public class SimpleHashMap<K, V> implements Map<K, V> {
     @Override
     public int size() {
         int size = 0;
-        for (LinkedList<MapEntry<K, V>> entries : buckets) {
-            if (Objects.nonNull(entries)) {
-                size += entries.size();
+        for (LinkedMapEntry<K, V> entry : buckets) {
+            while (Objects.nonNull(entry)) {
+                entry = entry.next;
+                size++;
             }
         }
         return size;
@@ -77,29 +77,30 @@ public class SimpleHashMap<K, V> implements Map<K, V> {
 
     @Override
     public boolean containsValue(Object value) {
-        Collection v = values();
+        Collection<V> v = values();
         return v.contains(value);
     }
 
     @Override
     public V get(Object key) {
         int index = Math.abs(key.hashCode() % SIZE);
-        if (Objects.nonNull(buckets[index])) {
-            for (MapEntry<K, V> entry : buckets[index]) {
-                if (entry.getKey().equals(key)) {
-                    return entry.getValue();
-                }
+        LinkedMapEntry<K, V> bucket = buckets[index];
+        while (Objects.nonNull(bucket)) {
+            if (bucket.getKey().equals(key)) {
+                return bucket.getValue();
             }
+            bucket = bucket.next;
         }
         return null;
     }
 
     @Override
     public Set<Entry<K, V>> entrySet() {
-        HashSet<Map.Entry<K, V>> set = new HashSet<>();
-        for (LinkedList<MapEntry<K, V>> entries : buckets) {
-            if (Objects.nonNull(entries)) {
-                set.addAll(entries);
+        HashSet<Entry<K, V>> set = new HashSet<>();
+        for (LinkedMapEntry<K, V> entry : buckets) {
+            while (Objects.nonNull(entry)) {
+                set.add(entry);
+                entry = entry.next;
             }
         }
         return set;
@@ -116,11 +117,10 @@ public class SimpleHashMap<K, V> implements Map<K, V> {
     @Override
     public Set<K> keySet() {
         Set<K> rtn = new HashSet<>();
-        for (LinkedList<MapEntry<K, V>> entries : buckets) {
-            if (Objects.nonNull(entries)) {
-                for (MapEntry<K, V> entry : entries) {
-                    rtn.add(entry.getKey());
-                }
+        for (LinkedMapEntry<K, V> entry : buckets) {
+            while (Objects.nonNull(entry)) {
+                rtn.add(entry.getKey());
+                entry = entry.next;
             }
         }
         return rtn;
@@ -128,13 +128,10 @@ public class SimpleHashMap<K, V> implements Map<K, V> {
 
     @Override
     public Collection<V> values() {
+        Set<K> ks = keySet();
         Collection<V> rtn = new ArrayList<>();
-        for (LinkedList<MapEntry<K, V>> entries : buckets) {
-            if (Objects.nonNull(entries)) {
-                for (MapEntry<K, V> entry : entries) {
-                    rtn.add(entry.getValue());
-                }
-            }
+        for (K k : ks) {
+            rtn.add(get(k));
         }
         return rtn;
     }
@@ -142,17 +139,22 @@ public class SimpleHashMap<K, V> implements Map<K, V> {
     @Override
     public V remove(Object key) {
         V old = null;
-        for (int i = 0; i < SIZE; i++) {
-            if (Objects.isNull(buckets[i])) {
-                continue;
-            }
-            for (int j = 0; j < buckets[i].size(); j++) {
-                if (buckets[i].get(j).getKey().equals(key)) {
-                    old = buckets[i].get(j).getValue();
-                    buckets[i].remove(j);
-                    break;
+        int index = Math.abs(key.hashCode() % SIZE);
+        LinkedMapEntry<K, V> bucket = buckets[index];
+        if (Objects.isNull(bucket)) {
+            return old;
+        }
+        LinkedMapEntry<K, V> pre = null;
+        while (Objects.nonNull(bucket)) {
+            if (bucket.getKey().equals(key)) {
+                if (pre == null) {
+                    buckets[index] = bucket.next;
+                } else {
+                    pre.next = bucket.next;
                 }
             }
+            pre = bucket;
+            bucket = bucket.next;
         }
         return old;
     }
@@ -172,7 +174,7 @@ public class SimpleHashMap<K, V> implements Map<K, V> {
     }
 
     public static void main(String[] args) {
-        SimpleHashMap<String, String> map = new SimpleHashMap<>();
+        SimpleLinkedHashMap<String, String> map = new SimpleLinkedHashMap<>();
         map.putAll(Countries.capitals(25));
         System.out.println(map);
         map.put("denmark", "Copenhagen");
