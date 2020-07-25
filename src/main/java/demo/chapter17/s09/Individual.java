@@ -67,7 +67,7 @@ public class Individual implements Comparable<Individual> {
     }
 }
 
-class Test {
+class IndividualTest {
     public static void main(String[] args) {
         Set<typeinfo.pets.Individual> set = new TreeSet<>();
         for (List<? extends Pet> lp : MapOfList.petPeople.values()) {

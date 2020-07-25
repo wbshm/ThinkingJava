@@ -43,7 +43,6 @@ public class CountedString {
         int result = 17;
         result = 37 * result + c;
         result = 37 * result + s.hashCode();
-        result = 37 * result + id;
         return result;
     }
 
