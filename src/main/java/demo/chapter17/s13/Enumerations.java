@@ -2,10 +2,7 @@ package demo.chapter17.s13;
 
 import demo.chapter17.Countries;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.Vector;
+import java.util.*;
 
 /**
  * @ClassName Enumerations
@@ -21,5 +18,7 @@ public class Enumerations {
             System.out.println(e.nextElement());
         }
         e = Collections.enumeration(new ArrayList<>());
+        long round = Math.round(-1.5);
+        System.out.println(round);
     }
 }
