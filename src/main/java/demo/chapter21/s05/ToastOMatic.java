@@ -57,8 +57,7 @@ class Toaster implements Runnable {
     public void run() {
         try {
             while (!Thread.interrupted()) {
-                TimeUnit.MILLISECONDS.sleep(
-                        100 + rand.nextInt(500));
+                TimeUnit.MILLISECONDS.sleep(100 + rand.nextInt(500));
                 // Make toast
                 Toast t = new Toast(count++);
                 print(t);
@@ -157,6 +156,7 @@ class Eater implements Runnable {
 }
 
 public class ToastOMatic {
+
     public static void main(String[] args) throws Exception {
         ToastQueue dryQueue = new ToastQueue(),
                 butteredQueue = new ToastQueue(),
